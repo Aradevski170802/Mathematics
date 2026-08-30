@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Geometry Lab — 10th Grade (Florida B.E.S.T.)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+    "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+  }
+}
+</script>
+</head>
+<body>
+
+<div class="bg-grid" aria-hidden="true"></div>
+<div class="bg-glow bg-glow-cyan" aria-hidden="true"></div>
+<div class="bg-glow bg-glow-magenta" aria-hidden="true"></div>
+
+<button id="navToggle" class="nav-toggle" aria-label="Toggle menu">☰</button>
+
+<nav id="sideNav" class="side-nav">
+  <div class="nav-brand">
+    <span class="brand-mark">◆</span>
+    <span>Geometry<br><span class="brand-sub">Lab</span></span>
+  </div>
+  <ul class="nav-links">
+    <li><a href="#hero" class="nav-link active" data-target="hero"><span class="nav-num">00</span>Home</a></li>
+    <li><a href="#foundations" class="nav-link" data-target="foundations"><span class="nav-num">01</span>Points, Lines &amp; Planes</a></li>
+    <li><a href="#segments" class="nav-link" data-target="segments"><span class="nav-num">02</span>Segments &amp; Midpoint</a></li>
+    <li><a href="#angles" class="nav-link" data-target="angles"><span class="nav-num">03</span>Angle Pairs</a></li>
+    <li><a href="#congruence" class="nav-link" data-target="congruence"><span class="nav-num">04</span>Congruent Triangles</a></li>
+    <li><a href="#similarity" class="nav-link" data-target="similarity"><span class="nav-num">05</span>Similar Triangles</a></li>
+    <li><a href="#righttri" class="nav-link" data-target="righttri"><span class="nav-num">06</span>Right Triangles</a></li>
+    <li><a href="#trig" class="nav-link" data-target="trig"><span class="nav-num">07</span>Trigonometry</a></li>
+  </ul>
+  <div class="nav-footer">Florida B.E.S.T. · MA.912.GR</div>
+</nav>
+
+<main>
+
+  <!-- HERO -->
+  <section id="hero" class="section hero">
+    <div class="hero-content">
+      <p class="eyebrow">Geometry, in 3D — Florida B.E.S.T. Standards</p>
+      <h1>See geometry.<br><span class="text-neon-cyan">Touch</span> geometry.<br><span class="text-neon-magenta">Understand</span> it.</h1>
+      <p class="hero-sub">An interactive lab for 10th grade Geometry: drag points, rotate 3D scenes, and watch formulas react live. Built around the ideas you need for class — points &amp; planes, midpoints, congruence, similarity, and right-triangle trig.</p>
+      <div class="hero-cta">
+        <a href="#foundations" class="btn btn-primary">Start exploring <span aria-hidden="true">→</span></a>
+        <a href="#trig" class="btn btn-ghost">Jump to Trigonometry</a>
+      </div>
+      <div class="hero-stats">
+        <div class="stat"><span class="stat-num text-neon-cyan">7</span><span class="stat-label">interactive labs</span></div>
+        <div class="stat"><span class="stat-num text-neon-magenta">100%</span><span class="stat-label">drag &amp; play</span></div>
+        <div class="stat"><span class="stat-num text-neon-yellow">3D</span><span class="stat-label">live scenes</span></div>
+      </div>
+    </div>
+    <div class="hero-scene" id="heroScene"></div>
+  </section>
+
+  <!-- 01 FOUNDATIONS -->
+  <section id="foundations" class="section">
+    <header class="section-head">
+      <span class="section-num">01</span>
+      <div>
+        <h2>Points, Lines &amp; Planes</h2>
+        <p class="section-kicker">MA.912.GR.1 — The undefined terms that everything else is built from.</p>
+      </div>
+    </header>
+
+    <div class="grid-2">
+      <div class="panel">
+        <h3><span class="dot dot-cyan"></span> Point</h3>
+        <p>A <strong>point</strong> has <em>no size</em> — no length, width, or depth. It only marks a <strong>location</strong>. We name it with a capital letter, like <code>A</code>.</p>
+        <h3><span class="dot dot-magenta"></span> Line</h3>
+        <p>A <strong>line</strong> is a straight path of points that extends <em>forever</em> in both directions. It has length but no width. Any 2 points determine exactly one line — written <code>AB</code> or <code>ℓ</code>.</p>
+        <h3><span class="dot dot-yellow"></span> Plane</h3>
+        <p>A <strong>plane</strong> is a flat surface that extends forever in every direction — like an infinite sheet of paper. It has length and width but no thickness. Any 3 non-collinear points determine exactly one plane.</p>
+        <div class="callout">
+          <strong>Collinear</strong> points lie on the <em>same line</em>. <strong>Coplanar</strong> points/lines lie in the <em>same plane</em>. Drag the points in the 3D scene to test both ideas yourself.
+        </div>
+      </div>
+
+      <div class="panel panel-scene">
+        <div class="scene-toolbar">
+          <button class="chip chip-active" data-fscene="points">Points</button>
+          <button class="chip" data-fscene="line">A Line</button>
+          <button class="chip" data-fscene="plane">A Plane</button>
+          <button class="chip" data-fscene="intersect">Plane ∩ Plane</button>
+        </div>
+        <div class="scene-box" id="foundationsScene"></div>
+        <p class="scene-hint">Drag to rotate · scroll to zoom · click a button above</p>
+      </div>
+    </div>
+
+    <div class="quiz" data-quiz>
+      <p class="quiz-q">Quick check: Two distinct lines that lie in the same plane and never intersect are called…</p>
+      <div class="quiz-opts">
+        <button data-correct="false">Perpendicular</button>
+        <button data-correct="false">Skew</button>
+        <button data-correct="true">Parallel</button>
+        <button data-correct="false">Collinear</button>
+      </div>
+      <p class="quiz-feedback"></p>
+    </div>
+  </section>
+
+  <!-- 02 SEGMENTS & MIDPOINT -->
+  <section id="segments" class="section">
+    <header class="section-head">
+      <span class="section-num">02</span>
+      <div>
+        <h2>Segments, Distance &amp; Midpoint</h2>
+        <p class="section-kicker">MA.912.GR.1 — Measuring the space between points.</p>
+      </div>
+    </header>
+
+    <div class="grid-2">
+      <div class="panel panel-scene">
+        <div class="coord-wrap">
+          <svg id="segmentSvg" viewBox="0 0 500 500" class="coord-svg"></svg>
+        </div>
+        <p class="scene-hint">Drag the <span class="text-neon-cyan">cyan</span> and <span class="text-neon-magenta">magenta</span> points anywhere on the grid.</p>
+      </div>
+
+      <div class="panel">
+        <h3>Distance Formula</h3>
+        <p>The distance between two points is the length of the segment connecting them — it comes straight from the Pythagorean theorem:</p>
+        <div class="formula">d = √[(x₂ − x₁)² + (y₂ − y₁)²]</div>
+        <h3>Midpoint Formula</h3>
+        <p>The midpoint is the point exactly <em>halfway</em> between two endpoints — just average the x's and average the y's:</p>
+        <div class="formula">M = ( (x₁+x₂)/2 , (y₁+y₂)/2 )</div>
+
+        <div class="readout" id="segmentReadout">
+          <div class="readout-row"><span>Point A</span><span id="ptA" class="text-neon-cyan mono">(0, 0)</span></div>
+          <div class="readout-row"><span>Point B</span><span id="ptB" class="text-neon-magenta mono">(0, 0)</span></div>
+          <div class="readout-row"><span>Distance AB</span><span id="ptDist" class="text-neon-yellow mono">0</span></div>
+          <div class="readout-row"><span>Midpoint M</span><span id="ptMid" class="text-neon-yellow mono">(0, 0)</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="quiz" data-quiz>
+      <p class="quiz-q">If A(2, 3) and B(8, 11), what is the midpoint of AB?</p>
+      <div class="quiz-opts">
+        <button data-correct="false">(3, 4)</button>
+        <button data-correct="true">(5, 7)</button>
+        <button data-correct="false">(10, 14)</button>
+        <button data-correct="false">(6, 8)</button>
+      </div>
+      <p class="quiz-feedback"></p>
+    </div>
+  </section>
+
+  <!-- 03 ANGLES -->
+  <section id="angles" class="section">
+    <header class="section-head">
+      <span class="section-num">03</span>
+      <div>
+        <h2>Angle Pairs</h2>
+        <p class="section-kicker">MA.912.GR.1 — Complementary, supplementary, and vertical angles.</p>
+      </div>
+    </header>
+
+    <div class="grid-2">
+      <div class="panel panel-scene">
+        <div class="coord-wrap">
+          <svg id="angleSvg" viewBox="0 0 500 500" class="coord-svg"></svg>
+        </div>
+        <p class="scene-hint">Drag the handle to rotate the angle and watch its partner update live.</p>
+      </div>
+      <div class="panel">
+        <h3><span class="dot dot-cyan"></span> Complementary</h3>
+        <p>Two angles whose measures add to <strong>90°</strong>.</p>
+        <h3><span class="dot dot-magenta"></span> Supplementary</h3>
+        <p>Two angles whose measures add to <strong>180°</strong> — they form a straight line.</p>
+        <h3><span class="dot dot-yellow"></span> Vertical Angles</h3>
+        <p>When two lines cross, the angles across from each other are <strong>congruent</strong> (always equal).</p>
+        <div class="readout">
+          <div class="readout-row"><span>Angle θ</span><span id="angTheta" class="text-neon-cyan mono">30°</span></div>
+          <div class="readout-row"><span>Complement (90° − θ)</span><span id="angComp" class="text-neon-magenta mono">60°</span></div>
+          <div class="readout-row"><span>Supplement (180° − θ)</span><span id="angSupp" class="text-neon-yellow mono">150°</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 04 CONGRUENCE -->
+  <section id="congruence" class="section">
+    <header class="section-head">
+      <span class="section-num">04</span>
+      <div>
+        <h2>Congruent Triangles</h2>
+        <p class="section-kicker">MA.912.GR.3 — Same size, same shape. Proving it without measuring everything.</p>
+      </div>
+    </header>
+
+    <p class="lead">Two triangles are <strong>congruent</strong> (≅) when all corresponding sides and angles match exactly. You almost never need to check all six — pick a postulate below to see the <em>minimum</em> proof each one needs.</p>
+
+    <div class="postulate-tabs" id="congTabs">
+      <button class="ptab ptab-active" data-cong="SSS">SSS</button>
+      <button class="ptab" data-cong="SAS">SAS</button>
+      <button class="ptab" data-cong="ASA">ASA</button>
+      <button class="ptab" data-cong="AAS">AAS</button>
+      <button class="ptab" data-cong="HL">HL</button>
+    </div>
+
+    <div class="grid-2">
+      <div class="panel panel-scene">
+        <div class="coord-wrap">
+          <svg id="congSvg" viewBox="0 0 500 380" class="coord-svg"></svg>
+        </div>
+      </div>
+      <div class="panel">
+        <h3 id="congTitle">Side-Side-Side (SSS)</h3>
+        <p id="congDesc">If all three sides of one triangle equal all three sides of another, the triangles must be congruent — the shape is locked in.</p>
+        <div class="callout" id="congMarks">Matching marks (tick marks) show which parts are given congruent.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 05 SIMILARITY -->
+  <section id="similarity" class="section">
+    <header class="section-head">
+      <span class="section-num">05</span>
+      <div>
+        <h2>Similar Triangles</h2>
+        <p class="section-kicker">MA.912.GR.4 — Same shape, proportional size.</p>
+      </div>
+    </header>
+
+    <p class="lead"><strong>Similar</strong> triangles (~) have the same angle measures but sides scaled by a constant <strong>scale factor (k)</strong>. Drag the slider — watch the small triangle stay perfectly proportional to the big one.</p>
+
+    <div class="grid-2">
+      <div class="panel panel-scene">
+        <div class="coord-wrap">
+          <svg id="simSvg" viewBox="0 0 500 400" class="coord-svg"></svg>
+        </div>
+        <div class="slider-row">
+          <label for="simSlider">Scale factor k</label>
+          <input type="range" id="simSlider" min="0.4" max="1.6" step="0.01" value="0.6">
+          <span id="simK" class="text-neon-yellow mono">0.60</span>
+        </div>
+      </div>
+      <div class="panel">
+        <h3>How to prove similarity</h3>
+        <ul class="check-list">
+          <li><strong>AA~</strong> — two pairs of angles are congruent (the third pair matches automatically, since angles sum to 180°).</li>
+          <li><strong>SAS~</strong> — two pairs of sides are proportional and the included angle is congruent.</li>
+          <li><strong>SSS~</strong> — all three pairs of sides are proportional.</li>
+        </ul>
+        <div class="readout">
+          <div class="readout-row"><span>Scale factor k</span><span id="simKReadout" class="text-neon-yellow mono">0.60</span></div>
+          <div class="readout-row"><span>Big triangle sides</span><span id="simBigSides" class="text-neon-cyan mono">6, 8, 10</span></div>
+          <div class="readout-row"><span>Small triangle sides</span><span id="simSmallSides" class="text-neon-magenta mono">3.6, 4.8, 6.0</span></div>
+          <div class="readout-row"><span>Perimeter ratio</span><span id="simPerim" class="text-neon-yellow mono">0.60</span></div>
+          <div class="readout-row"><span>Area ratio (k²)</span><span id="simArea" class="text-neon-yellow mono">0.36</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 06 RIGHT TRIANGLES -->
+  <section id="righttri" class="section">
+    <header class="section-head">
+      <span class="section-num">06</span>
+      <div>
+        <h2>Right Triangles &amp; the Pythagorean Theorem</h2>
+        <p class="section-kicker">MA.912.GR.3 / GR.4 — The 90° triangle and its special families.</p>
+      </div>
+    </header>
+
+    <div class="grid-2">
+      <div class="panel panel-scene">
+        <div class="coord-wrap">
+          <svg id="rightSvg" viewBox="0 0 500 420" class="coord-svg"></svg>
+        </div>
+        <div class="slider-row">
+          <label for="legSlider">Leg length a</label>
+          <input type="range" id="legSlider" min="40" max="220" step="1" value="120">
+        </div>
+      </div>
+      <div class="panel">
+        <h3>Pythagorean Theorem</h3>
+        <div class="formula">a² + b² = c²</div>
+        <p>Where <code>c</code> is the <strong>hypotenuse</strong> — always the side opposite the right angle, and always the longest side.</p>
+        <div class="readout">
+          <div class="readout-row"><span>Leg a</span><span id="rtA" class="text-neon-cyan mono">120</span></div>
+          <div class="readout-row"><span>Leg b</span><span id="rtB" class="text-neon-magenta mono">160</span></div>
+          <div class="readout-row"><span>Hypotenuse c</span><span id="rtC" class="text-neon-yellow mono">200.0</span></div>
+        </div>
+        <h3>Special Right Triangles</h3>
+        <div class="special-cards">
+          <div class="special-card"><strong>45° – 45° – 90°</strong><br>legs : legs : hyp<br><span class="mono text-neon-cyan">x : x : x√2</span></div>
+          <div class="special-card"><strong>30° – 60° – 90°</strong><br>short : long : hyp<br><span class="mono text-neon-magenta">x : x√3 : 2x</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 07 TRIG -->
+  <section id="trig" class="section">
+    <header class="section-head">
+      <span class="section-num">07</span>
+      <div>
+        <h2>Right-Triangle Trigonometry</h2>
+        <p class="section-kicker">MA.912.T.2 — SOH · CAH · TOA, live, in 3D.</p>
+      </div>
+    </header>
+
+    <div class="grid-2">
+      <div class="panel panel-scene">
+        <div class="scene-box" id="trigScene"></div>
+        <div class="slider-row">
+          <label for="trigSlider">Angle θ</label>
+          <input type="range" id="trigSlider" min="1" max="89" step="1" value="35">
+          <span id="trigTheta" class="text-neon-yellow mono">35°</span>
+        </div>
+        <p class="scene-hint">Drag to orbit the 3D triangle + unit circle. The slider sweeps θ from 1° to 89°.</p>
+      </div>
+      <div class="panel">
+        <h3>SOH · CAH · TOA</h3>
+        <div class="formula-grid">
+          <div class="formula-card"><span class="text-neon-cyan">sin θ</span> = opposite / hypotenuse</div>
+          <div class="formula-card"><span class="text-neon-magenta">cos θ</span> = adjacent / hypotenuse</div>
+          <div class="formula-card"><span class="text-neon-yellow">tan θ</span> = opposite / adjacent</div>
+        </div>
+        <div class="readout">
+          <div class="readout-row"><span>θ</span><span id="trigThetaR" class="mono">35°</span></div>
+          <div class="readout-row"><span>sin θ</span><span id="trigSin" class="text-neon-cyan mono">0.574</span></div>
+          <div class="readout-row"><span>cos θ</span><span id="trigCos" class="text-neon-magenta mono">0.819</span></div>
+          <div class="readout-row"><span>tan θ</span><span id="trigTan" class="text-neon-yellow mono">0.700</span></div>
+        </div>
+        <div class="callout">The unit circle point traces <code>(cos θ, sin θ)</code> — that's <em>why</em> those names were chosen. Watch it move as θ changes.</div>
+      </div>
+    </div>
+
+    <div class="quiz" data-quiz>
+      <p class="quiz-q">A ladder leans against a wall making a 60° angle with the ground. If the ladder is 10 ft long, how high up the wall does it reach? (use sin 60° ≈ 0.866)</p>
+      <div class="quiz-opts">
+        <button data-correct="false">5.0 ft</button>
+        <button data-correct="true">8.66 ft</button>
+        <button data-correct="false">10 ft</button>
+        <button data-correct="false">6.0 ft</button>
+      </div>
+      <p class="quiz-feedback"></p>
+    </div>
+  </section>
+
+  <footer class="site-footer">
+    <p>Geometry Lab · Built for Florida B.E.S.T. Geometry (10th grade) · Explore, drag, and rotate every diagram.</p>
+  </footer>
+
+</main>
+
+<script type="module" src="js/scenes.js"></script>
+<script type="module" src="js/main.js"></script>
+</body>
+</html>
