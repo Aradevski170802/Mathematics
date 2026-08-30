@@ -21,6 +21,24 @@ function drawGrid(svg, w, h, step = 25) {
   svg.appendChild(g);
 }
 
+/* Numbered axis ticks so students can read exact coordinates off the grid,
+   not just infer them from unlabeled lines. */
+function drawAxisNumbers(svg, w, h, scale, cx, cy, step = 2) {
+  const g = el('g');
+  const pxStep = scale * step;
+  for (let gx = pxStep; cx + gx < w - 10; gx += pxStep) {
+    const label = Math.round(gx / scale);
+    g.appendChild(Object.assign(el('text', { x: cx + gx, y: cy + 14, fill: 'rgba(255,255,255,0.35)', 'font-family': 'JetBrains Mono', 'font-size': 10, 'text-anchor': 'middle' }), { textContent: label }));
+    g.appendChild(Object.assign(el('text', { x: cx - gx, y: cy + 14, fill: 'rgba(255,255,255,0.35)', 'font-family': 'JetBrains Mono', 'font-size': 10, 'text-anchor': 'middle' }), { textContent: -label }));
+  }
+  for (let gy = pxStep; cy + gy < h - 6; gy += pxStep) {
+    const label = Math.round(gy / scale);
+    g.appendChild(Object.assign(el('text', { x: cx + 6, y: cy + gy + 4, fill: 'rgba(255,255,255,0.35)', 'font-family': 'JetBrains Mono', 'font-size': 10 }), { textContent: -label }));
+    g.appendChild(Object.assign(el('text', { x: cx + 6, y: cy - gy + 4, fill: 'rgba(255,255,255,0.35)', 'font-family': 'JetBrains Mono', 'font-size': 10 }), { textContent: label }));
+  }
+  svg.appendChild(g);
+}
+
 function makeDraggable(svg, node, getPos, setPos) {
   let dragging = false;
   const toLocal = (evt) => {
@@ -60,6 +78,7 @@ function initSegmentDemo() {
   function render() {
     clear(svg);
     drawGrid(svg, W, H);
+    drawAxisNumbers(svg, W, H, SCALE, CX, CY, 2);
     const [ax, ay] = toPx(A.x, A.y);
     const [bx, by] = toPx(B.x, B.y);
     const mx = (A.x + B.x) / 2, my = (A.y + B.y) / 2;
@@ -68,9 +87,19 @@ function initSegmentDemo() {
 
     svg.appendChild(el('line', { x1: ax, y1: ay, x2: bx, y2: by, stroke: '#f9ff3d', 'stroke-width': 2.5, opacity: 0.85 }));
 
+    // length label at the midpoint of the segment, offset perpendicular to it
+    const ddx = bx - ax, ddy = by - ay, dlen = Math.hypot(ddx, ddy) || 1;
+    const nx = -ddy / dlen, ny = ddx / dlen;
+    const labelOffset = 16 * (ny > 0 ? -1 : 1);
+    svg.appendChild(Object.assign(el('text', {
+      x: (ax + bx) / 2 + nx * labelOffset, y: (ay + by) / 2 + ny * labelOffset,
+      fill: '#f9ff3d', 'font-family': 'JetBrains Mono', 'font-size': 13, 'text-anchor': 'middle'
+    }), { textContent: `AB = ${dist.toFixed(2)}` }));
+
     const mDot = el('circle', { cx: mpx, cy: mpy, r: 7, fill: '#f9ff3d' });
     mDot.style.filter = 'drop-shadow(0 0 6px #f9ff3d)';
     svg.appendChild(mDot);
+    svg.appendChild(Object.assign(el('text', { x: mpx + 10, y: mpy + 20, fill: '#f9ff3d', 'font-family': 'JetBrains Mono', 'font-size': 12 }), { textContent: `M(${mx.toFixed(1)}, ${my.toFixed(1)})` }));
 
     const aDot = el('circle', { cx: ax, cy: ay, r: 11, fill: '#2af7ff' });
     aDot.style.filter = 'drop-shadow(0 0 8px #2af7ff)';
@@ -78,8 +107,8 @@ function initSegmentDemo() {
     bDot.style.filter = 'drop-shadow(0 0 8px #ff3ee0)';
     svg.appendChild(aDot); svg.appendChild(bDot);
 
-    svg.appendChild(el('text', { x: ax + 14, y: ay - 10, fill: '#2af7ff', 'font-family': 'JetBrains Mono', 'font-size': 15 })).textContent = 'A';
-    svg.appendChild(el('text', { x: bx + 14, y: by - 10, fill: '#ff3ee0', 'font-family': 'JetBrains Mono', 'font-size': 15 })).textContent = 'B';
+    svg.appendChild(Object.assign(el('text', { x: ax + 14, y: ay - 10, fill: '#2af7ff', 'font-family': 'JetBrains Mono', 'font-size': 15 }), { textContent: `A(${A.x.toFixed(1)}, ${A.y.toFixed(1)})` }));
+    svg.appendChild(Object.assign(el('text', { x: bx + 14, y: by - 10, fill: '#ff3ee0', 'font-family': 'JetBrains Mono', 'font-size': 15 }), { textContent: `B(${B.x.toFixed(1)}, ${B.y.toFixed(1)})` }));
 
     document.getElementById('ptA').textContent = `(${A.x.toFixed(1)}, ${A.y.toFixed(1)})`;
     document.getElementById('ptB').textContent = `(${B.x.toFixed(1)}, ${B.y.toFixed(1)})`;
@@ -107,6 +136,14 @@ function initAngleDemo() {
     return `M ${CX} ${CY} L ${x1} ${y1} A ${r} ${r} 0 ${large} 0 ${x2} ${y2} Z`;
   }
 
+  function wedgeLabel(midDeg, r, text, color) {
+    const rad = (Math.PI / 180) * midDeg;
+    return Object.assign(el('text', {
+      x: CX + r * Math.cos(rad), y: CY - r * Math.sin(rad),
+      fill: color, 'font-family': 'JetBrains Mono', 'font-size': 15, 'text-anchor': 'middle'
+    }), { textContent: text });
+  }
+
   function render() {
     clear(svg);
     drawGrid(svg, W, H);
@@ -130,12 +167,17 @@ function initAngleDemo() {
     handle.style.filter = 'drop-shadow(0 0 8px #f9ff3d)';
     svg.appendChild(handle);
 
-    svg.appendChild(el('text', { x: CX + 66, y: CY - 22, fill: '#2af7ff', 'font-family': 'JetBrains Mono', 'font-size': 16 })).textContent = `${t}°`;
-    svg.appendChild(el('text', { x: CX - 100, y: CY - 14, fill: '#ff3ee0', 'font-family': 'JetBrains Mono', 'font-size': 14 })).textContent = `${supp}°`;
+    // label all four wedges around the vertex — the two θ wedges (vertical pair)
+    // in cyan, the two supplementary wedges in magenta, so the pairing is visible at a glance
+    svg.appendChild(wedgeLabel(t / 2, 78, `${t}°`, '#2af7ff'));
+    svg.appendChild(wedgeLabel(180 + t / 2, 78, `${t}°`, '#2af7ff'));
+    svg.appendChild(wedgeLabel((t + 180) / 2, 62, `${supp}°`, '#ff3ee0'));
+    svg.appendChild(wedgeLabel((180 + t + 360) / 2, 62, `${supp}°`, '#ff3ee0'));
 
     document.getElementById('angTheta').textContent = `${t}°`;
     document.getElementById('angComp').textContent = t < 90 ? `${90 - t}°` : '—';
     document.getElementById('angSupp').textContent = `${supp}°`;
+    document.getElementById('angVert').textContent = `${t}°`;
 
     makeDraggable(svg, handle, null, (p) => {
       const vx = p.x - CX, vy = CY - p.y;
@@ -287,23 +329,50 @@ function initSimilarityDemo() {
   if (!svg) return;
   const slider = document.getElementById('simSlider');
 
-  const P0 = { x: 70, y: 340 }, P1 = { x: 70, y: 160 }, P2 = { x: 310, y: 340 };
-  const legA = 8, legB = 6, hyp = 10;
-  const anchor = { x: 330, y: 340 };
+  // P0 is the right-angle vertex. The small triangle is anchored far enough
+  // to the right that even at the slider's max k it stays inside the viewBox
+  // (this was the bug: the old layout let it run off the right edge).
+  const P0 = { x: 60, y: 360 }, P1 = { x: 60, y: 228 }, P2 = { x: 236, y: 360 };
+  const legA = 8, legB = 6, hyp = 10; // units; 22px per unit
+  const anchor = { x: 270, y: 360 };
+
+  function angleArc(vertex, from, to, r, color) {
+    const a1 = Math.atan2(from.y - vertex.y, from.x - vertex.x);
+    const a2 = Math.atan2(to.y - vertex.y, to.x - vertex.x);
+    const x1 = vertex.x + r * Math.cos(a1), y1 = vertex.y + r * Math.sin(a1);
+    const x2 = vertex.x + r * Math.cos(a2), y2 = vertex.y + r * Math.sin(a2);
+    let diff = a2 - a1; while (diff < 0) diff += Math.PI * 2;
+    const large = diff > Math.PI ? 1 : 0;
+    return el('path', { d: `M ${x1} ${y1} A ${r} ${r} 0 ${large} 1 ${x2} ${y2}`, fill: 'none', stroke: color, 'stroke-width': 2.2 });
+  }
 
   function render(k) {
     clear(svg);
+
     svg.appendChild(el('polygon', { points: `${P0.x},${P0.y} ${P1.x},${P1.y} ${P2.x},${P2.y}`, fill: 'rgba(42,247,255,0.08)', stroke: '#2af7ff', 'stroke-width': 3 }));
-    svg.appendChild(el('path', { d: `M ${P0.x} ${P0.y - 16} L ${P0.x + 16} ${P0.y - 16} L ${P0.x + 16} ${P0.y}`, fill: 'none', stroke: '#2af7ff', 'stroke-width': 1.5 }));
+    svg.appendChild(el('path', { d: `M ${P0.x} ${P0.y - 14} L ${P0.x + 14} ${P0.y - 14} L ${P0.x + 14} ${P0.y}`, fill: 'none', stroke: '#2af7ff', 'stroke-width': 1.5 }));
+    // angle arcs on the big triangle: cyan at the top vertex (P1), yellow at the right vertex (P2)
+    svg.appendChild(angleArc(P1, P0, P2, 26, '#2af7ff'));
+    svg.appendChild(angleArc(P2, P1, P0, 26, '#f9ff3d'));
 
     const sx = a => anchor.x + (a.x - P0.x) * k;
     const sy = a => anchor.y + (a.y - P0.y) * k;
     const Q0 = { x: sx(P0), y: sy(P0) }, Q1 = { x: sx(P1), y: sy(P1) }, Q2 = { x: sx(P2), y: sy(P2) };
     svg.appendChild(el('polygon', { points: `${Q0.x},${Q0.y} ${Q1.x},${Q1.y} ${Q2.x},${Q2.y}`, fill: 'rgba(255,62,224,0.1)', stroke: '#ff3ee0', 'stroke-width': 3 }));
+    svg.appendChild(el('path', { d: `M ${Q0.x} ${Q0.y - 14 * k} L ${Q0.x + 14 * k} ${Q0.y - 14 * k} L ${Q0.x + 14 * k} ${Q0.y}`, fill: 'none', stroke: '#ff3ee0', 'stroke-width': 1.5 }));
+    // same-colored arcs on the small triangle prove the angles match regardless of size
+    svg.appendChild(angleArc(Q1, Q0, Q2, 20, '#2af7ff'));
+    svg.appendChild(angleArc(Q2, Q1, Q0, 20, '#f9ff3d'));
 
-    svg.appendChild(Object.assign(el('text', { x: (P0.x + P2.x) / 2 - 10, y: P0.y + 22, fill: '#2af7ff', 'font-family': 'JetBrains Mono', 'font-size': 13 }), { textContent: '8' }));
-    svg.appendChild(Object.assign(el('text', { x: P0.x - 24, y: (P0.y + P1.y) / 2, fill: '#2af7ff', 'font-family': 'JetBrains Mono', 'font-size': 13 }), { textContent: '6' }));
-    svg.appendChild(Object.assign(el('text', { x: (P1.x + P2.x) / 2 + 6, y: (P1.y + P2.y) / 2 - 6, fill: '#2af7ff', 'font-family': 'JetBrains Mono', 'font-size': 13 }), { textContent: '10' }));
+    const mono = { 'font-family': 'JetBrains Mono', 'font-size': 13 };
+    svg.appendChild(Object.assign(el('text', { x: (P0.x + P2.x) / 2 - 8, y: P0.y + 22, fill: '#2af7ff', ...mono }), { textContent: `a = ${legA}` }));
+    svg.appendChild(Object.assign(el('text', { x: P0.x - 46, y: (P0.y + P1.y) / 2, fill: '#2af7ff', ...mono }), { textContent: `b = ${legB}` }));
+    svg.appendChild(Object.assign(el('text', { x: (P1.x + P2.x) / 2 + 10, y: (P1.y + P2.y) / 2 - 6, fill: '#2af7ff', ...mono }), { textContent: `c = ${hyp}` }));
+
+    const smallMono = { 'font-family': 'JetBrains Mono', 'font-size': 12 };
+    svg.appendChild(Object.assign(el('text', { x: (Q0.x + Q2.x) / 2 - 6, y: Q0.y + 18, fill: '#ff3ee0', ...smallMono }), { textContent: (legA * k).toFixed(1) }));
+    svg.appendChild(Object.assign(el('text', { x: Q0.x + 8, y: (Q0.y + Q1.y) / 2, fill: '#ff3ee0', ...smallMono }), { textContent: (legB * k).toFixed(1) }));
+    svg.appendChild(Object.assign(el('text', { x: (Q1.x + Q2.x) / 2 + 8, y: (Q1.y + Q2.y) / 2 - 4, fill: '#ff3ee0', ...smallMono }), { textContent: (hyp * k).toFixed(1) }));
 
     document.getElementById('simK').textContent = k.toFixed(2);
     document.getElementById('simKReadout').textContent = k.toFixed(2);
@@ -322,7 +391,16 @@ function initRightTriDemo() {
   const svg = document.getElementById('rightSvg');
   if (!svg) return;
   const slider = document.getElementById('legSlider');
-  const origin = { x: 90, y: 370 };
+  // Origin sits well inside the viewBox so the outward-facing squares
+  // (drawn away from the triangle on all three sides) always stay in frame.
+  const origin = { x: 300, y: 480 };
+
+  function square(p1, p2, outX, outY, color, opacity) {
+    // p1 -> p2 is one side; (outX,outY) is the outward displacement vector (same length as the side)
+    const p3 = { x: p2.x + outX, y: p2.y + outY };
+    const p4 = { x: p1.x + outX, y: p1.y + outY };
+    return el('polygon', { points: `${p1.x},${p1.y} ${p2.x},${p2.y} ${p3.x},${p3.y} ${p4.x},${p4.y}`, fill: color, opacity, stroke: color, 'stroke-width': 2 });
+  }
 
   function render(a) {
     clear(svg);
@@ -330,37 +408,254 @@ function initRightTriDemo() {
     const c = a * (5 / 3);
     const A = origin, B = { x: origin.x + a, y: origin.y }, C = { x: origin.x, y: origin.y - b };
 
-    svg.appendChild(el('polygon', { points: `${A.x},${A.y} ${B.x},${B.y} ${C.x},${C.y}`, fill: 'rgba(249,255,61,0.06)', stroke: '#f9ff3d', 'stroke-width': 3 }));
+    // square on leg a (bottom edge A->B), pointing straight down
+    svg.appendChild(square(A, B, 0, a, '#2af7ff', 0.12));
+    // square on leg b (edge C->A), pointing straight left
+    svg.appendChild(square(C, A, -b, 0, '#ff3ee0', 0.12));
+    // square on hypotenuse (edge B->C), pointing away from A (up-and-right)
+    svg.appendChild(square(B, C, b, -a, '#f9ff3d', 0.1));
+
+    svg.appendChild(el('polygon', { points: `${A.x},${A.y} ${B.x},${B.y} ${C.x},${C.y}`, fill: 'rgba(255,255,255,0.05)', stroke: '#eef1f8', 'stroke-width': 3 }));
     svg.appendChild(el('path', { d: `M ${A.x} ${A.y - 16} L ${A.x + 16} ${A.y - 16} L ${A.x + 16} ${A.y}`, fill: 'none', stroke: '#eef1f8', 'stroke-width': 1.5 }));
 
-    svg.appendChild(Object.assign(el('text', { x: (A.x + B.x) / 2 - 8, y: A.y + 24, fill: '#2af7ff', 'font-family': 'JetBrains Mono', 'font-size': 15 }), { textContent: 'a' }));
-    svg.appendChild(Object.assign(el('text', { x: A.x - 22, y: (A.y + C.y) / 2, fill: '#ff3ee0', 'font-family': 'JetBrains Mono', 'font-size': 15 }), { textContent: 'b' }));
-    svg.appendChild(Object.assign(el('text', { x: (B.x + C.x) / 2 + 10, y: (B.y + C.y) / 2 - 4, fill: '#f9ff3d', 'font-family': 'JetBrains Mono', 'font-size': 15 }), { textContent: 'c' }));
+    const mono = { 'font-family': 'JetBrains Mono', 'font-size': 16, 'text-anchor': 'middle' };
+    svg.appendChild(Object.assign(el('text', { x: (A.x + B.x) / 2, y: A.y + 24, fill: '#2af7ff', ...mono }), { textContent: `a = ${a.toFixed(0)}` }));
+    svg.appendChild(Object.assign(el('text', { x: A.x - 24, y: (A.y + C.y) / 2, fill: '#ff3ee0', ...mono, 'text-anchor': 'end' }), { textContent: `b = ${b.toFixed(0)}` }));
+    svg.appendChild(Object.assign(el('text', { x: (B.x + C.x) / 2 + 14, y: (B.y + C.y) / 2 - 10, fill: '#f9ff3d', ...mono }), { textContent: `c = ${c.toFixed(1)}` }));
+
+    // area labels centered inside each square
+    svg.appendChild(Object.assign(el('text', { x: (A.x + B.x) / 2, y: A.y + a / 2 + 6, fill: '#2af7ff', ...mono, 'font-size': 14 }), { textContent: `a² = ${(a * a).toFixed(0)}` }));
+    svg.appendChild(Object.assign(el('text', { x: A.x - b / 2, y: (A.y + C.y) / 2 + 5, fill: '#ff3ee0', ...mono, 'font-size': 14 }), { textContent: `b² = ${(b * b).toFixed(0)}` }));
+    const hypMidX = (B.x + C.x) / 2 + b / 2, hypMidY = (B.y + C.y) / 2 - a / 2;
+    svg.appendChild(Object.assign(el('text', { x: hypMidX, y: hypMidY + 5, fill: '#f9ff3d', ...mono, 'font-size': 14 }), { textContent: `c² = ${(c * c).toFixed(0)}` }));
 
     document.getElementById('rtA').textContent = a.toFixed(0);
     document.getElementById('rtB').textContent = b.toFixed(0);
     document.getElementById('rtC').textContent = c.toFixed(1);
+    document.getElementById('rtAreaA').textContent = (a * a).toFixed(0);
+    document.getElementById('rtAreaB').textContent = (b * b).toFixed(0);
+    document.getElementById('rtSumAB').textContent = (a * a + b * b).toFixed(0);
+    document.getElementById('rtAreaC').textContent = (c * c).toFixed(0);
   }
 
   render(parseFloat(slider.value));
   slider.addEventListener('input', () => render(parseFloat(slider.value)));
 }
 
+/* ================= TRIGONOMETRY (2D companion diagram) ================= */
+function initTrig2D() {
+  const svg = document.getElementById('trigSvg2D');
+  if (!svg) return null;
+  const O = { x: 80, y: 280 };
+  const HYP_UNITS = 10, SCALE = 24; // fixed hypotenuse of 10 units keeps every θ in frame
+
+  return function render(thetaDeg) {
+    clear(svg);
+    const rad = thetaDeg * Math.PI / 180;
+    const adjUnits = HYP_UNITS * Math.cos(rad), oppUnits = HYP_UNITS * Math.sin(rad);
+    const R = { x: O.x + adjUnits * SCALE, y: O.y };
+    const T = { x: R.x, y: R.y - oppUnits * SCALE };
+
+    svg.appendChild(el('line', { x1: 20, y1: O.y, x2: 460, y2: O.y, stroke: 'rgba(255,255,255,0.08)', 'stroke-width': 1 }));
+    svg.appendChild(el('polygon', { points: `${O.x},${O.y} ${R.x},${R.y} ${T.x},${T.y}`, fill: 'rgba(249,255,61,0.05)', stroke: '#f9ff3d', 'stroke-width': 2.5 }));
+    svg.appendChild(el('path', { d: `M ${R.x - 14} ${R.y} L ${R.x - 14} ${R.y - 14} L ${R.x} ${R.y - 14}`, fill: 'none', stroke: '#eef1f8', 'stroke-width': 1.5 }));
+
+    const arcR = 36;
+    svg.appendChild(el('path', { d: `M ${O.x + arcR} ${O.y} A ${arcR} ${arcR} 0 0 0 ${O.x + arcR * Math.cos(rad)} ${O.y - arcR * Math.sin(rad)}`, fill: 'none', stroke: '#f9ff3d', 'stroke-width': 2 }));
+    svg.appendChild(Object.assign(el('text', { x: O.x + arcR + 16, y: O.y - 12, fill: '#f9ff3d', 'font-family': 'JetBrains Mono', 'font-size': 14 }), { textContent: `θ = ${thetaDeg}°` }));
+
+    const mono = { 'font-family': 'JetBrains Mono', 'font-size': 13 };
+    svg.appendChild(Object.assign(el('text', { x: (O.x + R.x) / 2, y: O.y + 22, fill: '#ff3ee0', ...mono, 'text-anchor': 'middle' }), { textContent: `adjacent = ${adjUnits.toFixed(2)}` }));
+    svg.appendChild(Object.assign(el('text', { x: R.x + 10, y: (R.y + T.y) / 2, fill: '#2af7ff', ...mono }), { textContent: `opposite = ${oppUnits.toFixed(2)}` }));
+    svg.appendChild(Object.assign(el('text', { x: (O.x + T.x) / 2 - 70, y: (O.y + T.y) / 2 - 8, fill: '#f9ff3d', ...mono }), { textContent: `hypotenuse = ${HYP_UNITS}` }));
+
+    [[O, '#f9ff3d'], [R, '#eef1f8'], [T, '#eef1f8']].forEach(([p, c]) => svg.appendChild(el('circle', { cx: p.x, cy: p.y, r: 5, fill: c })));
+  };
+}
+
 /* ================= TRIGONOMETRY ================= */
 function initTrigControls() {
   const slider = document.getElementById('trigSlider');
   if (!slider) return;
+  const render2D = initTrig2D();
+  const HYP_UNITS = 10;
+
   function render(theta) {
     const rad = theta * Math.PI / 180;
+    const sin = Math.sin(rad), cos = Math.cos(rad), tan = Math.tan(rad);
     document.getElementById('trigTheta').textContent = `${theta}°`;
     document.getElementById('trigThetaR').textContent = `${theta}°`;
-    document.getElementById('trigSin').textContent = Math.sin(rad).toFixed(3);
-    document.getElementById('trigCos').textContent = Math.cos(rad).toFixed(3);
-    document.getElementById('trigTan').textContent = Math.tan(rad).toFixed(3);
+    document.getElementById('trigSin').textContent = sin.toFixed(3);
+    document.getElementById('trigCos').textContent = cos.toFixed(3);
+    document.getElementById('trigTan').textContent = tan.toFixed(3);
     setTrigTheta(theta);
+    if (render2D) render2D(theta);
+
+    const worked = document.getElementById('trigWorked');
+    if (worked) {
+      const opp = HYP_UNITS * sin, adj = HYP_UNITS * cos;
+      worked.innerHTML =
+        `Given: θ = ${theta}°, hypotenuse = ${HYP_UNITS}<br>` +
+        `opposite = hyp × sin θ = ${HYP_UNITS} × ${sin.toFixed(3)} = <span class="text-neon-cyan">${opp.toFixed(2)}</span><br>` +
+        `adjacent = hyp × cos θ = ${HYP_UNITS} × ${cos.toFixed(3)} = <span class="text-neon-magenta">${adj.toFixed(2)}</span><br>` +
+        `check: opposite / adjacent = ${(opp / adj).toFixed(3)} ≈ tan θ = ${tan.toFixed(3)} ✓`;
+    }
   }
   render(parseFloat(slider.value));
   slider.addEventListener('input', () => render(parseFloat(slider.value)));
+}
+
+/* ================= PRACTICE EXERCISES ================= */
+function rand(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
+
+function initPracticeScore() {
+  const scoreEl = document.getElementById('practiceScoreVal');
+  let correct = 0, total = 0;
+  return function record(isCorrect) {
+    total++;
+    if (isCorrect) correct++;
+    if (scoreEl) scoreEl.textContent = `${correct} / ${total}`;
+  };
+}
+
+function initNumericPractice(cardId, recordScore, generate) {
+  const card = document.getElementById(cardId);
+  if (!card) return;
+  const promptEl = card.querySelector('.practice-prompt');
+  const inputs = Array.from(card.querySelectorAll('.practice-input'));
+  const checkBtn = card.querySelector('.practice-check');
+  const newBtn = card.querySelector('.practice-new');
+  const feedback = card.querySelector('.practice-feedback');
+  let current = null;
+  let checked = false;
+
+  function next() {
+    current = generate();
+    promptEl.innerHTML = current.prompt;
+    inputs.forEach(i => i.value = '');
+    feedback.textContent = '';
+    feedback.className = 'practice-feedback';
+    checked = false;
+  }
+
+  checkBtn.addEventListener('click', () => {
+    const vals = inputs.map(i => parseFloat(i.value));
+    if (vals.some(v => Number.isNaN(v))) {
+      feedback.textContent = 'Fill in every box first.';
+      feedback.className = 'practice-feedback wrong';
+      return;
+    }
+    const tol = current.tol || inputs.map(() => 0.1);
+    const ok = current.answers.every((a, i) => Math.abs(a - vals[i]) <= tol[i]);
+    if (!checked) { recordScore(ok); checked = true; }
+    feedback.textContent = ok ? '✔ Correct!' : `✘ Not quite — correct answer: ${current.answers.map(a => Math.round(a * 100) / 100).join(', ')}`;
+    feedback.className = 'practice-feedback ' + (ok ? 'correct' : 'wrong');
+  });
+  newBtn.addEventListener('click', next);
+  next();
+}
+
+function initCongruencePractice(recordScore) {
+  const card = document.getElementById('pcCongruence');
+  if (!card) return;
+  const promptEl = card.querySelector('.practice-prompt');
+  const buttons = Array.from(card.querySelectorAll('[data-cong-answer]'));
+  const newBtn = card.querySelector('.practice-new');
+  const feedback = card.querySelector('.practice-feedback');
+  const bank = [
+    { text: 'All three pairs of corresponding sides are congruent.', answer: 'SSS' },
+    { text: 'Two pairs of corresponding sides and the included angle between them are congruent.', answer: 'SAS' },
+    { text: 'Two pairs of corresponding angles and the included side between them are congruent.', answer: 'ASA' },
+    { text: 'Two pairs of corresponding angles are congruent, plus a side that is NOT between them.', answer: 'AAS' },
+    { text: 'Both are right triangles with congruent hypotenuses and one congruent pair of legs.', answer: 'HL' },
+  ];
+  let current = null, checked = false;
+
+  function next() {
+    current = bank[rand(0, bank.length - 1)];
+    promptEl.textContent = current.text;
+    buttons.forEach(b => b.classList.remove('correct', 'wrong'));
+    feedback.textContent = '';
+    feedback.className = 'practice-feedback';
+    checked = false;
+  }
+
+  buttons.forEach(btn => btn.addEventListener('click', () => {
+    if (checked) return;
+    checked = true;
+    const ok = btn.dataset.congAnswer === current.answer;
+    recordScore(ok);
+    buttons.forEach(b => {
+      if (b.dataset.congAnswer === current.answer) b.classList.add('correct');
+      else if (b === btn) b.classList.add('wrong');
+    });
+    feedback.textContent = ok ? '✔ Correct!' : `✘ Not quite — the answer is ${current.answer}.`;
+    feedback.className = 'practice-feedback ' + (ok ? 'correct' : 'wrong');
+  }));
+  newBtn.addEventListener('click', next);
+  next();
+}
+
+function genMidpointPractice() {
+  let ax, ay, bx, by;
+  do { ax = rand(-10, 10); ay = rand(-10, 10); bx = rand(-10, 10); by = rand(-10, 10); }
+  while (ax === bx && ay === by);
+  const mx = (ax + bx) / 2, my = (ay + by) / 2;
+  const dist = Math.hypot(bx - ax, by - ay);
+  return {
+    prompt: `A(${ax}, ${ay}) and B(${bx}, ${by}). Find the midpoint of AB, and the distance AB.`,
+    answers: [mx, my, dist],
+    tol: [0.05, 0.05, 0.1],
+  };
+}
+
+function genAnglePractice() {
+  const theta = rand(5, 85);
+  return {
+    prompt: `An angle measures ${theta}°. Find its complement, then its supplement.`,
+    answers: [90 - theta, 180 - theta],
+    tol: [0.5, 0.5],
+  };
+}
+
+function genRightTrianglePractice() {
+  const legA = rand(3, 20), legB = rand(3, 20);
+  const hyp = Math.hypot(legA, legB);
+  if (Math.random() < 0.5) {
+    return { prompt: `A right triangle has legs a = ${legA} and b = ${legB}. Find the hypotenuse c.`, answers: [hyp], tol: [0.1] };
+  }
+  return { prompt: `A right triangle has hypotenuse c = ${hyp.toFixed(2)} and one leg a = ${legA}. Find the other leg b.`, answers: [legB], tol: [0.1] };
+}
+
+function genTrigPractice() {
+  const theta = rand(15, 75);
+  const hyp = rand(5, 20);
+  const rad = theta * Math.PI / 180;
+  return {
+    prompt: `A right triangle has angle θ = ${theta}° and hypotenuse = ${hyp}. Find the opposite and adjacent side lengths.`,
+    answers: [hyp * Math.sin(rad), hyp * Math.cos(rad)],
+    tol: [0.1, 0.1],
+  };
+}
+
+function genSimilarPractice() {
+  const k = +(rand(12, 30) / 10).toFixed(1);
+  const smallSide = rand(3, 15);
+  const bigSide = +(smallSide * k).toFixed(2);
+  if (Math.random() < 0.5) {
+    return { prompt: `△ABC ~ △DEF with scale factor k = ${k} (△DEF is the larger triangle). If AB = ${smallSide}, find DE.`, answers: [bigSide], tol: [0.1] };
+  }
+  return { prompt: `△ABC ~ △DEF with scale factor k = ${k} (△DEF is the larger triangle). If DE = ${bigSide}, find AB.`, answers: [smallSide], tol: [0.1] };
+}
+
+function initPractice() {
+  const recordScore = initPracticeScore();
+  initNumericPractice('pcMidpoint', recordScore, genMidpointPractice);
+  initNumericPractice('pcAngles', recordScore, genAnglePractice);
+  initNumericPractice('pcRight', recordScore, genRightTrianglePractice);
+  initNumericPractice('pcTrig', recordScore, genTrigPractice);
+  initNumericPractice('pcSimilar', recordScore, genSimilarPractice);
+  initCongruencePractice(recordScore);
 }
 
 /* ================= QUIZZES ================= */
@@ -414,4 +709,5 @@ window.addEventListener('DOMContentLoaded', () => {
   initRightTriDemo();
   initTrigControls();
   initQuizzes();
+  initPractice();
 });

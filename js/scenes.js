@@ -253,8 +253,17 @@ function initFoundationsScene() {
   Object.values(modeGroups).forEach(g => { g.visible = false; scene.add(g); });
   modeGroups.points.visible = true;
 
+  const CAPTIONS = {
+    points: 'Three points, floating freely in space — none of them are forced to line up.',
+    line: 'A and B determine exactly one line (solid), which keeps going forever in both directions (dashed).',
+    plane: 'A, B, and C are non-collinear, so together they pin down exactly one flat plane — rotate to see it stays fixed by all three.',
+    intersect: 'Two planes that aren’t parallel always cross in exactly one straight line (yellow) — never a curve, never a region.',
+  };
+
   function setMode(mode) {
     Object.entries(modeGroups).forEach(([k, g]) => g.visible = k === mode);
+    const caption = document.getElementById('foundationsCaption');
+    if (caption && CAPTIONS[mode]) caption.textContent = CAPTIONS[mode];
   }
   document.querySelectorAll('[data-fscene]').forEach(btn => {
     btn.addEventListener('click', () => {
